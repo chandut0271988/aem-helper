@@ -1,5 +1,6 @@
 export type IconName =
   | "query"
+  | "chart"
   | "locale"
   | "package"
   | "grid"
@@ -11,6 +12,7 @@ export type IconName =
   | "info"
   | "code";
 const paths: Record<IconName, string> = {
+  chart: "M3 3v18h18M7 16v-4m5 4V7m5 9v-7",
   query: "m8 6-6 6 6 6m8-12 6 6-6 6m-2-15-4 18",
   locale:
     "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0M3 12h18M12 3a18 18 0 0 1 0 18 18 18 0 0 1 0-18",

@@ -24,7 +24,7 @@ The `esbuild` override selects its security-patched 0.28.1 release while retaini
 npm run dev
 ```
 
-Open the local URL printed by Vite. The dashboard links to all three tools. Form values survive tool switching during the current session; refreshing resets them.
+Open the local URL printed by Vite. The dashboard links to all four tools. Form values and log analysis survive tool switching during the current session; refreshing resets them.
 
 ## Run tests
 
@@ -57,6 +57,7 @@ npm run preview
 - `src/tools/query-generator/`: typed query models, pure predicate and SQL2 generators, UI, and tests.
 - `src/tools/locale-path-generator/`: locale parsing, placeholder expansion, CSV formatting, UI, and tests.
 - `src/tools/package-generator/`: filter and metadata XML, manifest generation, browser ZIP assembly, UI, and tests.
+- `src/tools/response-time-analyser/`: streaming log parser, browser worker, response bands, time aggregation, SVG graphs, paginated tables, and tests.
 - `src/utils/`: path validation, XML escaping, clipboard, and object-URL downloads.
 - `src/styles/`: design tokens, global styles, layout, and forms. No UI framework or remote fonts.
 
@@ -91,6 +92,25 @@ jcr_root/
 ```
 
 Metadata and filters follow the [Apache Jackrabbit FileVault metadata layout](https://jackrabbit.apache.org/filevault/metadata.html) and [package properties format](https://jackrabbit.apache.org/filevault/properties.html). The Java properties DTD identifier is emitted as text; the application does not fetch it. `packageType` is `mixed` to avoid assuming that all selected paths contain only content. Filenames sanitize path separators; XML preserves and escapes entered metadata. `jcr_root/` is intentionally empty.
+
+### Response Time Analyser
+
+Choose a UTF-8 AEM request log (`.log` or `.txt`) and click **Analyse log**. The browser reads the file in chunks inside a Web Worker, so parsing can be cancelled without blocking the interface. No file is sent to a server. Production log samples are not bundled with the app or committed as fixtures.
+
+```text
+30/Sep/2026:10:03:41 +0000 [2149932] -> GET /content/site/en/home.html HTTP/1.1
+30/Sep/2026:10:03:41 +0000 [2149932] <- 200 text/html;charset=UTF-8 4ms
+```
+
+Incoming `->` and returning `<-` lines are joined by the bracketed identifier using a pending-request map. Results retain the incoming timestamp, HTTP method, exact URL (including query string), response status, and reported duration in milliseconds. Interleaved requests, fractional durations, CRLF, UTF-8 BOMs, and stray trailing export quotes are supported.
+
+- **Response time:** four separate sections: `≤500`, `>500–5,000`, `>5,000–20,000`, and `>20,000` ms. Boundary values are included in the lower band; each matched request belongs to exactly one section. Tables show timestamp, URL, and duration, slowest first, with pagination.
+- **Graph-hits:** incoming hits over time and a URL list with hit counts and first/last timestamps. Includes incoming requests without a matched response.
+- **Graph-time:** mean and maximum response duration by incoming timestamp, plus individual matched requests. Maximums keep slow outliers visible even when a time interval contains many requests.
+
+Graphs normalize timestamps to UTC and choose at most 120 equal time buckets automatically. Empty hit buckets show zero; intervals without matched durations remain gaps in the response-time graph. Click a bucket or use the labeled interval selector to inspect its URLs. The selector is also the keyboard-accessible alternative to clicking a graph. Original timestamps and offsets remain visible in request tables.
+
+Use one AEM instance per file with incoming lines before their corresponding response lines. Incomplete pairs, unmatched responses, malformed lines, and overlapping reuse of an identifier are reported rather than guessed. Sequential ID reuse after a completed pair is supported; overlapping IDs are left unmatched for the remainder of the file. Only the first 20 diagnostic examples are shown, while totals count all issues. The parser validates timestamps but uses the recorded duration, not timestamp subtraction, because log timestamps only have second precision. Very large logs remain subject to browser memory limits even though file reading and parsing happen in a worker.
 
 ## Adding a new tool
 

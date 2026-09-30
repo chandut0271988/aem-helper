@@ -3,6 +3,7 @@ import type { IconName } from "../components/Icon";
 import { QueryGenerator } from "../tools/query-generator/QueryGenerator";
 import { LocalePathGenerator } from "../tools/locale-path-generator/LocalePathGenerator";
 import { PackageGenerator } from "../tools/package-generator/PackageGenerator";
+import { ResponseTimeAnalyser } from "../tools/response-time-analyser/ResponseTimeAnalyser";
 
 export interface ToolProps {
   packagePaths: string[];
@@ -54,6 +55,18 @@ export const tools = [
     tag: "PREPARE YOUR PACKAGE",
     preview: "META-INF/\n  vault/filter.xml\njcr_root/",
     component: PackageGenerator,
+  },
+  {
+    id: "response-time-analyser",
+    name: "Response Time Analyser",
+    navName: "Response Times",
+    description:
+      "Analyse AEM request logs, find slow URLs, and explore hit and response-time distributions.",
+    icon: "chart",
+    tag: "UNDERSTAND YOUR TRAFFIC",
+    preview:
+      "[2149932] → GET /content/site/en\n[2149932] ← 200 text/html 4ms\nTimestamp · URL · Response time",
+    component: ResponseTimeAnalyser,
   },
 ] as const satisfies readonly ToolDefinition[];
 export type ToolId = (typeof tools)[number]["id"];
