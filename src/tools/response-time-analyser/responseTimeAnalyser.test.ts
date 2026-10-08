@@ -4,9 +4,11 @@ import {
   bucketRequests,
   groupByResponseTime,
   responseBand,
+  responseBands,
   urlHits,
 } from "./analysis";
 import { LogTextStream, parseLogTimestamp, parseRequestLog } from "./logParser";
+import { generateResponseText } from "./responseText";
 
 const incoming = (
   id: number,
@@ -192,8 +194,42 @@ describe("response bands and graphs", () => {
     [5000.1, "slow"],
     [20000, "slow"],
     [20000.1, "very-slow"],
+    [60000, "very-slow"],
+    [60000.1, "extremely-slow"],
   ] as const)("places %s ms in %s without boundary gaps", (ms, expected) => {
     expect(responseBand(ms)).toBe(expected);
+  });
+  it("lists bands slowest first and places every matched request in exactly one band", () => {
+    const durations = [60001, 60000, 20000, 5000, 500];
+    const requests = parseRequestLog(
+      durations.map((ms, index) => pair(index, ms)).join("\n"),
+    ).requests;
+    const groups = groupByResponseTime(requests);
+    expect(
+      responseBands.map((band) =>
+        groups[band.id].map((request) => request.responseTimeMs),
+      ),
+    ).toEqual(durations.map((ms) => [ms]));
+  });
+  it("exports every row beyond the table page size with exact URLs and timestamps", () => {
+    const requests = parseRequestLog(
+      Array.from({ length: 30 }, (_, index) =>
+        pair(
+          index,
+          60001 + index,
+          "10:03:41",
+          `/content/page-${index}.html?a=1&b=2`,
+        ),
+      ).join("\n"),
+    ).requests;
+    const text = generateResponseText(">60,000 ms", requests);
+    expect(text).toContain("Requests: 30\n");
+    expect(text).toContain("Timestamp\tURL\tResponse time (ms)\n");
+    expect(text.trimEnd().split("\n")).toHaveLength(34);
+    expect(text).toContain(
+      "30/Sep/2026:10:03:41 +0000\t/content/page-29.html?a=1&b=2\t60030\n",
+    );
+    expect(generateResponseText(">60,000 ms", [])).toContain("Requests: 0\n");
   });
   it("excludes incomplete requests from bands and sorts slowest first", () => {
     const requests = parseRequestLog(

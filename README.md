@@ -104,7 +104,7 @@ Choose a UTF-8 AEM request log (`.log` or `.txt`) and click **Analyse log**. The
 
 Incoming `->` and returning `<-` lines are joined by the bracketed identifier using a pending-request map. Results retain the incoming timestamp, HTTP method, exact URL (including query string), response status, and reported duration in milliseconds. Interleaved requests, fractional durations, CRLF, UTF-8 BOMs, and stray trailing export quotes are supported.
 
-- **Response time:** four separate sections: `≤500`, `>500–5,000`, `>5,000–20,000`, and `>20,000` ms. Boundary values are included in the lower band; each matched request belongs to exactly one section. Tables show timestamp, URL, and duration, slowest first, with pagination.
+- **Response time:** five separate sections, slowest first: `>60,000`, `>20,000–60,000`, `>5,000–20,000`, `>500–5,000`, and `≤500` ms. Boundary values are included in the lower band; each matched request belongs to exactly one section. Sections start collapsed and can be independently expanded or collapsed. Tables show timestamp, URL, and duration, slowest first, with pagination. Each section has a **Download TXT** button, available even while collapsed, that exports all its requests (not just the visible page) as tab-separated timestamp, URL, and response time in milliseconds.
 - **Graph-hits:** incoming hits over time and a URL list with hit counts and first/last timestamps. Includes incoming requests without a matched response.
 - **Graph-time:** mean and maximum response duration by incoming timestamp, plus individual matched requests. Maximums keep slow outliers visible even when a time interval contains many requests.
 

@@ -9,7 +9,7 @@ import {
   responseBands,
 } from "./analysis";
 import { GraphView } from "./GraphView";
-import { RequestTable } from "./RequestTable";
+import { ResponseBandSection } from "./ResponseBandSection";
 import type { LogAnalysis, WorkerMessage } from "./types";
 import "./responseTime.css";
 
@@ -276,29 +276,18 @@ export function ResponseTimeAnalyser() {
               {view === "responses" ? (
                 <div class="log-bands">
                   <p class="log-muted">
-                    Matched responses only, slowest first in each section. Exact
-                    boundary values belong to the lower band. Timestamps retain
-                    the log’s timezone.
+                    Matched responses only, slowest sections first. Expand a
+                    section to view requests; downloads include every request in
+                    that section, not just the current page. Exact boundary
+                    values belong to the lower band. Timestamps retain the log’s
+                    timezone.
                   </p>
                   {responseBands.map((band) => (
-                    <section
-                      class={`panel log-band log-band-${band.tone}`}
+                    <ResponseBandSection
                       key={band.id}
-                    >
-                      <div class="log-band-heading">
-                        <div>
-                          <h2>{band.label}</h2>
-                          <span>{band.description}</span>
-                        </div>
-                        <strong>
-                          {groups[band.id].length.toLocaleString()} requests
-                        </strong>
-                      </div>
-                      <RequestTable
-                        requests={groups[band.id]}
-                        label={`${band.label} requests`}
-                      />
-                    </section>
+                      band={band}
+                      requests={groups[band.id]}
+                    />
                   ))}
                 </div>
               ) : (

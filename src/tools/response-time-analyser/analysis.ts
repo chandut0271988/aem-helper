@@ -1,24 +1,40 @@
 import type { RequestRecord, Timeline, TimeBucket } from "./types";
 
 export const responseBands = [
-  { id: "fast", label: "≤500 ms", description: "Up to 500 ms", tone: "green" },
   {
-    id: "moderate",
-    label: ">500–5,000 ms",
-    description: "Over 500, up to 5,000 ms",
-    tone: "blue",
+    id: "extremely-slow",
+    label: ">60,000 ms",
+    description: "Over 60,000 ms",
+    tone: "red",
+    filename: "response-times-over-60000ms.txt",
+  },
+  {
+    id: "very-slow",
+    label: ">20,000–60,000 ms",
+    description: "Over 20,000, up to 60,000 ms",
+    tone: "red",
+    filename: "response-times-20000-60000ms.txt",
   },
   {
     id: "slow",
     label: ">5,000–20,000 ms",
     description: "Over 5,000, up to 20,000 ms",
     tone: "amber",
+    filename: "response-times-5000-20000ms.txt",
   },
   {
-    id: "very-slow",
-    label: ">20,000 ms",
-    description: "Over 20,000 ms",
-    tone: "red",
+    id: "moderate",
+    label: ">500–5,000 ms",
+    description: "Over 500, up to 5,000 ms",
+    tone: "blue",
+    filename: "response-times-500-5000ms.txt",
+  },
+  {
+    id: "fast",
+    label: "≤500 ms",
+    description: "Up to 500 ms",
+    tone: "green",
+    filename: "response-times-up-to-500ms.txt",
   },
 ] as const;
 export type ResponseBand = (typeof responseBands)[number]["id"];
@@ -27,7 +43,8 @@ export function responseBand(ms: number): ResponseBand {
   if (ms <= 500) return "fast";
   if (ms <= 5_000) return "moderate";
   if (ms <= 20_000) return "slow";
-  return "very-slow";
+  if (ms <= 60_000) return "very-slow";
+  return "extremely-slow";
 }
 
 export function groupByResponseTime(
@@ -38,6 +55,7 @@ export function groupByResponseTime(
     moderate: [],
     slow: [],
     "very-slow": [],
+    "extremely-slow": [],
   };
   for (const request of requests)
     if (request.responseTimeMs !== null)
