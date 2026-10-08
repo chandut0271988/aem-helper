@@ -1,7 +1,6 @@
 import { useId, useState } from "preact/hooks";
 import { Icon } from "../../components/Icon";
 import { downloadTextFile } from "../../utils/download";
-import { responseBands } from "./analysis";
 import { generateResponseText } from "./responseText";
 import { RequestTable } from "./RequestTable";
 import type { RequestRecord } from "./types";
@@ -10,7 +9,12 @@ export function ResponseBandSection({
   band,
   requests,
 }: {
-  band: (typeof responseBands)[number];
+  band: {
+    label: string;
+    description: string;
+    tone: "red" | "amber" | "blue" | "green";
+    filename: string;
+  };
   requests: RequestRecord[];
 }) {
   const [expanded, setExpanded] = useState(false);

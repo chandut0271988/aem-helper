@@ -231,6 +231,21 @@ describe("response bands and graphs", () => {
     );
     expect(generateResponseText(">60,000 ms", [])).toContain("Requests: 0\n");
   });
+  it("exports missing responses with unknown duration while retaining zero-ms matches", () => {
+    const requests = parseRequestLog(
+      `${incoming(1)}\n${pair(2, 0)}\n${incoming(3, "10:03:42", "/content/pending.html")}`,
+    ).requests;
+    const missing = requests.filter(
+      (request) => request.responseTimeMs === null,
+    );
+    expect(missing.map((request) => request.id)).toEqual(["1", "3"]);
+    const text = generateResponseText("Missing responses", missing);
+    expect(text).toContain("Requests: 2\n");
+    expect(text).toContain(
+      "30/Sep/2026:10:03:42 +0000\t/content/pending.html\tNo response\n",
+    );
+    expect(groupByResponseTime(requests).fast).toHaveLength(1);
+  });
   it("excludes incomplete requests from bands and sorts slowest first", () => {
     const requests = parseRequestLog(
       `${pair(1, 400)}\n${pair(2, 500)}\n${pair(3, 510)}\n${incoming(4)}`,

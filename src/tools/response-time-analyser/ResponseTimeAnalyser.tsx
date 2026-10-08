@@ -38,6 +38,12 @@ export function ResponseTimeAnalyser() {
     (total, group) => total + group.length,
     0,
   );
+  const missingResponses = useMemo(
+    () =>
+      analysis?.requests.filter((request) => request.responseTimeMs === null) ??
+      [],
+    [analysis],
+  );
   const maxResponse = useMemo(
     () =>
       analysis?.requests.reduce(
@@ -276,12 +282,22 @@ export function ResponseTimeAnalyser() {
               {view === "responses" ? (
                 <div class="log-bands">
                   <p class="log-muted">
-                    Matched responses only, slowest sections first. Expand a
-                    section to view requests; downloads include every request in
-                    that section, not just the current page. Exact boundary
-                    values belong to the lower band. Timestamps retain the log’s
-                    timezone.
+                    Missing responses first, followed by matched responses from
+                    slowest to fastest. Expand a section to view requests;
+                    downloads include every request in that section, not just
+                    the current page. Exact boundary values belong to the lower
+                    band. Timestamps retain the log’s timezone.
                   </p>
+                  <ResponseBandSection
+                    band={{
+                      label: "Missing responses",
+                      description:
+                        "Incoming requests with no matched response in this log. Response time is unknown.",
+                      tone: "red",
+                      filename: "requests-missing-responses.txt",
+                    }}
+                    requests={missingResponses}
+                  />
                   {responseBands.map((band) => (
                     <ResponseBandSection
                       key={band.id}
